@@ -29,7 +29,7 @@ const update = async (id, product) => {
   return result.matchedCount
 }
 
-const deleteProduct = async (id) => {
+const deleteUser = async (id) => {
   const collection = await Database(COLLECTION)
   const result = await collection.deleteOne({ _id: new ObjectId(id) })
   return result.deletedCount
@@ -40,5 +40,5 @@ module.exports.UsersService = {
   getById,
   create,
   update,
-  deleteProduct
+  deleteUser
 }

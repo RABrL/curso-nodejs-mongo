@@ -52,7 +52,7 @@ module.exports.UsersController = {
       const { params: { id } } = req
       const user = await UsersService.getById(id)
       if (!user) return Response.error(res, new createError.NotFound())
-      await UsersService.deleteProduct(id)
+      await UsersService.deleteUser(id)
       Response.success(res, 200, `Usuario ${user.name} eliminado con exito`)
     } catch (error) {
       debug(error)
