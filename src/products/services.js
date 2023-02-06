@@ -24,9 +24,9 @@ const create = async (product) => {
   return result.insertedId
 }
 
-const update = async (id, product) => {
+const update = async (id, dataUpdate) => {
   const collection = await Database(COLLECTION)
-  const result = await collection.replaceOne({ _id: new ObjectId(id) }, product)
+  const result = await collection.updateOne({ _id: new ObjectId(id) }, dataUpdate)
   return result.matchedCount
 }
 
