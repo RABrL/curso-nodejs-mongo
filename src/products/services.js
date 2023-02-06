@@ -4,6 +4,10 @@ const { ProductsUtils } = require('./utils')
 
 const COLLECTION = 'products'
 
+/**
+ *
+ * @returns return one array of objects
+ */
 const getAll = async () => {
   const collection = await Database(COLLECTION)
   return await collection.find({}).toArray()
