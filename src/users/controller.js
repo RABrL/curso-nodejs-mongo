@@ -39,9 +39,14 @@ module.exports.UsersController = {
     try {
       const { params: { id }, body } = req
       if (!body || Object.keys(body).length === 0) return Response.error(res, new createError.BadRequest())
-      const result = await UsersService.update(id, body)
+      const dataUpdate = {
+        $set: {
+          ...body
+        }
+      }
+      const result = await UsersService.update(id, dataUpdate)
       if (result === 0) return Response.error(res, new createError.NotFound())
-      Response.success(res, 200, `Usuario ${body.name} actualizado`)
+      Response.success(res, 200, 'Usuario actualizado')
     } catch (error) {
       debug(error)
       Response.error(res)
