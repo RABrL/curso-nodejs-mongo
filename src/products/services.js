@@ -41,7 +41,7 @@ const generateReport = async (res, name) => {
   ProductsUtils.excelGenerator(products, res, name)
 }
 
-module.exports.ProductsSerivice = {
+module.exports.ProductsService = {
   getAll,
   getById,
   create,

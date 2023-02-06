@@ -1,12 +1,12 @@
 const debug = require('debug')('app:module-products-controller')
-const { ProductsSerivice } = require('./services')
+const { ProductsService } = require('./services')
 const { Response } = require('../common/response')
 const createError = require('http-errors')
 
 module.exports.ProductsController = {
   getProducts: async (req, res) => {
     try {
-      const products = await ProductsSerivice.getAll()
+      const products = await ProductsService.getAll()
       Response.success(res, 200, 'Lista de productos', products)
     } catch (error) {
       debug(error)
@@ -16,7 +16,7 @@ module.exports.ProductsController = {
   getProduct: async (req, res) => {
     try {
       const { params: { id } } = req
-      const product = await ProductsSerivice.getById(id)
+      const product = await ProductsService.getById(id)
       if (!product) return Response.error(res, new createError.NotFound())
       Response.success(res, 200, `Producto ${id}`, product)
     } catch (error) {
@@ -28,7 +28,7 @@ module.exports.ProductsController = {
     try {
       const { body } = req
       if (!body || Object.keys(body).length === 0) return Response.error(res, new createError.BadRequest())
-      const insertedId = await ProductsSerivice.create(body)
+      const insertedId = await ProductsService.create(body)
       Response.success(res, 201, `Producto ${body.name} agregado `, insertedId)
     } catch (error) {
       debug(error)
@@ -39,7 +39,7 @@ module.exports.ProductsController = {
     try {
       const { params: { id }, body } = req
       if (!body || Object.keys(body).length === 0) return Response.error(res, new createError.BadRequest())
-      const result = await ProductsSerivice.update(id, body)
+      const result = await ProductsService.update(id, body)
       if (result === 0) return Response.error(res, new createError.NotFound())
       Response.success(res, 200, `Producto ${body.name} actualizado`)
     } catch (error) {
@@ -50,9 +50,10 @@ module.exports.ProductsController = {
   deleteProduct: async (req, res) => {
     try {
       const { params: { id } } = req
-      const result = await ProductsSerivice.deleteProduct(id)
-      if (result === 1) return Response.success(res, 200, `Product ${id} eliminado con exito`)
-      Response.error(res, new createError.NotFound())
+      const product = await ProductsService.getById(id)
+      if (!product) return Response.error(res, new createError.NotFound())
+      await ProductsService.deleteProduct(id)
+      Response.success(res, 200, `Product ${product.name} eliminado con exito`)
     } catch (error) {
       debug(error)
       Response.error(res)
@@ -60,7 +61,7 @@ module.exports.ProductsController = {
   },
   generateReport: (req, res) => {
     try {
-      ProductsSerivice.generateReport(res, 'inventario')
+      ProductsService.generateReport(res, 'inventario')
     } catch (error) {
       debug(error)
       Response.error(res)
