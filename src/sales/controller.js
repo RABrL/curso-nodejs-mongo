@@ -33,25 +33,25 @@ module.exports.SalesController = {
 
       // Si el usuario no existe
       const users = await UsersService.getAll()
-      const userExist = users.filter(user => user.name === username)[0]
-      if (!userExist) return Response.error(res, new createError.NotFound(`El usuario '${username}' no esta registrado`))
+      const user = users.find(user => user.name === username)
+      if (!user) return Response.error(res, new createError.NotFound(`El usuario '${username}' no esta registrado`))
 
       // si el producto a vender no existe
       const products = await ProductsService.getAll()
-      const productExist = products.filter(product => product.name === productName)[0]
-      if (!productExist) return Response.error(res, new createError.Conflict(`El producto '${productName}' no existe`))
+      const product = products.find(product => product.name === productName)
+      if (!product) return Response.error(res, new createError.Conflict(`El producto '${productName}' no existe`))
 
       // si no hay la cantidad suficiente
-      if (productExist.stock < amount) return Response.error(res, new createError.NotFound(`Solo hay ${productExist.stock} ${productName} en el inventario`))
+      if (product.stock < amount) return Response.error(res, new createError.NotFound(`Solo hay ${product.stock} ${productName} en el inventario`))
 
       // si todo sale bien
       const dataUpdate = {
         $set: {
-          stock: productExist.stock - amount
+          stock: product.stock - amount
         }
       }
-      ProductsService.update(productExist._id, dataUpdate)
-      const result = await SalesService.create({ user: username, product: productName, productId: productExist._id, amount, cost: productExist.cost * amount })
+      ProductsService.update(product._id, dataUpdate)
+      const result = await SalesService.create({ user: username, product: productName, productId: product._id, amount, cost: product.cost * amount })
       Response.success(res, 201, `Venta ${result._id} creada`, result)
     } catch (error) {
       debug(error)
