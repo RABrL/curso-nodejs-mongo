@@ -17,5 +17,5 @@ SalesAPI(app)
 // modulos
 
 app.listen(Config.port, () => {
-  debug(`Servidor escuchando en el puerto ${Config.port}`)
+  debug(`Servidor levantado en http://localhost:${Config.port}`)
 })

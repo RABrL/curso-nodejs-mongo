@@ -7,7 +7,7 @@ let connection = null
 module.exports.Database = (collection) => new Promise(async (resolve, reject) => {
   try {
     // singelton
-    if (!connection) {connection
+    if (!connection) {
       const client = new MongoClient(Config.mongoUri)
       connection = await client.connect()
       debug('Nueva conexion realizada con mongo atlas')

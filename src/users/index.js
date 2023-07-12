@@ -4,8 +4,8 @@ const router = express.Router()
 
 module.exports.UsersAPI = (app) => {
   router
-    .get('/', UsersController.getUsers) // http://localhost:3000/api/products/
-    .get('/:id', UsersController.getUser) // http://localhost:3000/api/products/23
+    .get('/', UsersController.getUsers) // http://localhost:3000/api/users/
+    .get('/:id', UsersController.getUser) // http://localhost:3000/api/users/23
     .post('/', UsersController.createUser)
     .put('/:id', UsersController.updateUser)
     .delete('/:id', UsersController.deleteUser)
