@@ -7,7 +7,6 @@ const { SalesAPI } = require('./src/sales')
 const { UsersAPI } = require('./src/users')
 
 const app = express()
-
 app.use(express.json())
 
 ProductsAPI(app)
