@@ -26,10 +26,18 @@ module.exports.ProductsController = {
   },
   createProduct: async (req, res) => {
     try {
-      const { body } = req
-      if (!body || Object.keys(body).length === 0) return Response.error(res, new createError.BadRequest())
-      const insertedId = await ProductsService.create(body)
-      Response.success(res, 201, `Producto ${body.name} agregado `, insertedId)
+      const { body: { name, cost, stock } } = req
+      if (!name || !cost || !stock) return Response.error(res, new createError.BadRequest())
+
+      const nameCapitalize = name.charAt(0).toUpperCase() + name.slice(1)
+
+      if (await ProductsService.productAlreadyExist(nameCapitalize)) {
+        return Response.error(res, new createError.Conflict(`Ya existe un producto con el nombre ${nameCapitalize}`))
+      }
+
+      const insertedId = await ProductsService.create({ name: nameCapitalize, cost, stock })
+
+      Response.success(res, 201, `Producto ${nameCapitalize} agregado con exito`, insertedId)
     } catch (error) {
       debug(error)
       Response.error(res)
@@ -38,14 +46,27 @@ module.exports.ProductsController = {
   updateProduct: async (req, res) => {
     try {
       const { params: { id }, body } = req
-      if (!body || Object.keys(body).length === 0) return Response.error(res, new createError.BadRequest())
+      const { name, cost, stock } = body
+      if (!name && !cost && !stock) return Response.error(res, new createError.BadRequest())
+      let nameCapitalize = name
+      const product = await ProductsService.getById(id)
+      if (!product) return Response.error(res, new createError.NotFound())
+
+      if (name) {
+        nameCapitalize = name.charAt(0).toUpperCase() + name.slice(1)
+        if (await ProductsService.productAlreadyExist(nameCapitalize)) {
+          return Response.error(res, new createError.Conflict(`Ya existe un producto con el nombre ${nameCapitalize}`))
+        }
+        body.name = nameCapitalize
+      }
       const dataUpdate = {
         $set: {
-          ...body
+          name: nameCapitalize || product.name,
+          cost: cost || product.cost,
+          stock: stock || product.stock
         }
       }
-      const result = await ProductsService.update(id, dataUpdate)
-      if (result === 0) return Response.error(res, new createError.NotFound())
+      await ProductsService.update(id, dataUpdate)
       Response.success(res, 200, 'Producto actualizado')
     } catch (error) {
       debug(error)

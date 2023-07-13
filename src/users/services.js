@@ -35,10 +35,16 @@ const deleteUser = async (id) => {
   return result.deletedCount
 }
 
+const userAlreadyExist = async (email) => {
+  const users = await getAll()
+  return users.find(user => user.email === email.toLowerCase())
+}
+
 module.exports.UsersService = {
   getAll,
   getById,
   create,
   update,
-  deleteUser
+  deleteUser,
+  userAlreadyExist
 }

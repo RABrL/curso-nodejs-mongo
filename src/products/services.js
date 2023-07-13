@@ -41,11 +41,18 @@ const generateReport = async (res, name) => {
   ProductsUtils.excelGenerator(products, res, name)
 }
 
+const productAlreadyExist = async (name) => {
+  const nameCapitalize = name.charAt(0).toUpperCase() + name.slice(1)
+  const products = await getAll()
+  return products.find(product => product.name === nameCapitalize)
+}
+
 module.exports.ProductsService = {
   getAll,
   getById,
   create,
   generateReport,
   update,
-  deleteProduct
+  deleteProduct,
+  productAlreadyExist
 }

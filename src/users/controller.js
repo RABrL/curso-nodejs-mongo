@@ -26,10 +26,15 @@ module.exports.UsersController = {
   },
   createUser: async (req, res) => {
     try {
-      const { body } = req
-      if (!body || Object.keys(body).length === 0) return Response.error(res, new createError.BadRequest())
-      const insertedId = await UsersService.create(body)
-      Response.success(res, 201, `Usuario ${body.name} agregado`, insertedId)
+      const { body: { name, email, age = null } } = req
+      if (!name || !email) return Response.error(res, new createError.BadRequest())
+
+      if (await UsersService.userAlreadyExist(email)) {
+        return Response.error(res, new createError.Conflict(`Ya existe un usuario con el email ${email}`))
+      }
+
+      const insertedId = await UsersService.create({ name, email: email.toLowerCase(), age })
+      Response.success(res, 201, `Usuario ${name} agregado`, insertedId)
     } catch (error) {
       debug(error)
       Response.error(res)
@@ -38,14 +43,24 @@ module.exports.UsersController = {
   updateUser: async (req, res) => {
     try {
       const { params: { id }, body } = req
-      if (!body || Object.keys(body).length === 0) return Response.error(res, new createError.BadRequest())
+      const { name, email, age } = body
+
+      if (!name && !email && !age) return Response.error(res, new createError.BadRequest())
+
+      const user = await UsersService.getById(id)
+      if (!user) return Response.error(res, new createError.NotFound())
+
+      if (email && await UsersService.userAlreadyExist(email)) {
+        return Response.error(res, new createError.Conflict(`Ya existe un usuario con el email ${email}`))
+      }
       const dataUpdate = {
         $set: {
-          ...body
+          name: name || user.name,
+          email: email || user.email,
+          age: age || user.age
         }
       }
-      const result = await UsersService.update(id, dataUpdate)
-      if (result === 0) return Response.error(res, new createError.NotFound())
+      await UsersService.update(id, dataUpdate)
       Response.success(res, 200, 'Usuario actualizado')
     } catch (error) {
       debug(error)

@@ -28,21 +28,20 @@ module.exports.SalesController = {
   },
   createSale: async (req, res) => {
     try {
-      const { body: { user: username, product: productName, amount } } = req
-      if (!username || !productName || !amount) return Response.error(res, new createError.BadRequest())
+      const { body: { user_email: email, product: productName, amount } } = req
+      if (!email || !productName || !amount) return Response.error(res, new createError.BadRequest())
 
       // Si el usuario no existe
-      const users = await UsersService.getAll()
-      const user = users.find(user => user.name === username)
-      if (!user) return Response.error(res, new createError.NotFound(`El usuario '${username}' no esta registrado`))
+      const emailLowerCase = email.toLowerCase()
+      const user = await UsersService.userAlreadyExist(emailLowerCase)
+      if (!user) return Response.error(res, new createError.NotFound(`El usuario con email '${email}' no esta registrado`))
 
       // si el producto a vender no existe
-      const products = await ProductsService.getAll()
-      const product = products.find(product => product.name === productName)
+      const product = await ProductsService.productAlreadyExist(productName)
       if (!product) return Response.error(res, new createError.Conflict(`El producto '${productName}' no existe`))
 
       // si no hay la cantidad suficiente
-      if (product.stock < amount) return Response.error(res, new createError.NotFound(`Solo hay ${product.stock} ${productName} en el inventario`))
+      if (product.stock < amount) return Response.error(res, new createError.NotFound(`Solo hay ${product.stock} ${product.name} en el inventario`))
 
       // si todo sale bien
       const dataUpdate = {
@@ -51,7 +50,7 @@ module.exports.SalesController = {
         }
       }
       ProductsService.update(product._id, dataUpdate)
-      const result = await SalesService.create({ user: username, product: productName, productId: product._id, amount, cost: product.cost * amount })
+      const result = await SalesService.create({ user: user.name, userId: user._id, product: productName, productId: product._id, amount, cost: product.cost * amount })
       Response.success(res, 201, `Venta ${result._id} creada`, result)
     } catch (error) {
       debug(error)
@@ -63,13 +62,13 @@ module.exports.SalesController = {
       const { params: { id }, body: { product: productName, amount } } = req
       if (!productName || !amount) return Response.error(res, new createError.BadRequest())
 
-      const products = await ProductsService.getAll()
-      const product = products.filter(product => product.name === productName)[0]
+      const product = await ProductsService.productAlreadyExist(productName)
       if (!product) return Response.error(res, new createError.Conflict(`El producto '${productName}' no existe`))
 
       // si el producto es el mismo
       const sale = await SalesService.getById(id)
-      if (sale.product === productName) {
+      if (sale.product === product.name) {
+        // Si va a añadir mas cantidad a la venta
         if (sale.amount < amount) {
           // si no hay la cantidad suficiente
           if (product.stock < amount - sale.amount) return Response.error(res, new createError.NotFound(`Solo hay ${product.stock} ${productName} en el inventario`))
@@ -122,7 +121,7 @@ module.exports.SalesController = {
       // Actualizo la venta
       const saleUpdate = {
         $set: {
-          product: productName,
+          product: product.name,
           productId: product._id,
           amount,
           cost: amount * product.cost
