@@ -2,10 +2,10 @@ const express = require('express')
 const createError = require('http-errors')
 const { Response } = require('../common/response')
 
-module.export.IndexAPI = (app) => {
+module.exports.IndexAPI = (app) => {
   const router = express.Router()
 
-  router.get('/', (res, req) => {
+  router.get('/', (req, res) => {
     const menu = {
       products: `https://${req.headers.host}/api/products`,
       sales: `https://${req.headers.host}/api/sales`,
@@ -18,7 +18,7 @@ module.export.IndexAPI = (app) => {
   app.use('/', router)
 }
 
-module.export.NotFoundAPI = (app) => {
+module.exports.NotFoundAPI = (app) => {
   const router = express.Router()
 
   router.all('*', (req, res) => {
